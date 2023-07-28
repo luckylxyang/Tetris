@@ -1,32 +1,181 @@
 package com.lxy.tetris
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun GameScreen(viewModel: TetrisViewModel) {
-    // 绘制游戏区域和方块
-    Canvas(
-        modifier = Modifier.fillMaxSize(),
-        onDraw = {
-            // 绘制游戏区域
-//            drawRect(/* ... */)
+    // 游戏区域的宽高和格子大小
+    val gameAreaWidth = 10
+    val gameAreaHeight = 20
+    val cellSize = 24.dp
 
-            // 绘制当前方块
-            val currentBlock = viewModel.currentBlock.value
-            for (row in 0 until currentBlock.size) {
-                for (col in 0 until currentBlock[row].size) {
-                    if (currentBlock[row][col]) {
-                        // 绘制方块格子
-//                        drawRect(/* ... */)
+    // 绘制游戏界面
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color.Yellow // 绘制边缘区域（金黄色），用于区分非游戏区域
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 绘制游戏区域
+            Canvas(
+                modifier = Modifier.size(
+                    (gameAreaWidth * cellSize.value).dp,
+                    (gameAreaHeight * cellSize.value).dp
+                ),
+            ) {
+                // 绘制边缘区域（金黄色）
+                drawRect(color = Color.Yellow, size = size)
+
+                // 绘制游戏区域（深灰色）
+                drawRect(
+                    color = Color.Gray,
+                    size = Size(gameAreaWidth * cellSize.toPx(), gameAreaHeight * cellSize.toPx())
+                )
+
+                // 绘制游戏区域内的方块
+                drawGameArea(gameAreaWidth, gameAreaHeight, cellSize, viewModel.gameArea.value)
+                drawCurrentBlock(viewModel.getCurrentBlock(), cellSize)
+            }
+
+            // 下方控制按钮区域
+            Row(
+                modifier = Modifier.padding(16.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                // 分为左右两块，
+                // 左侧有 暂停、音效、重玩、掉落
+
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .weight(1f),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Button(onClick = { /* 左方按钮点击事件 */ }) {
+                            Text(text = "暂停")
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(onClick = { /* 下方按钮点击事件 */ }) {
+                            Text(text = "音效")
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(onClick = { /* 右方按钮点击事件 */ }) {
+                            Text(text = "重玩")
+                        }
+                    }
+
+                    Button(onClick = { /* 左方按钮点击事件 */ }) {
+                        Text(text = "掉落")
                     }
                 }
+
+
+                // 右侧有左、右、下、和旋转
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .weight(1f)
+                        .graphicsLayer(rotationZ = 45f),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Button(onClick = { /* 左方按钮点击事件 */ }) {
+                            Text(text = "左")
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(onClick = { /* 下方按钮点击事件 */ }) {
+                            Text(text = "旋转")
+                        }
+
+                    }
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Button(onClick = { /* 左方按钮点击事件 */ }) {
+                            Text(text = "下")
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(onClick = { /* 下方按钮点击事件 */ }) {
+                            Text(text = "右")
+                        }
+
+                    }
+                }
+
+
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 显示分数
+            Text(text = "Score: ${viewModel.score.value}")
+        }
+    }
+}
+
+private fun DrawScope.drawGameArea(
+    width: Int,
+    height: Int,
+    cellSize: Dp,
+    gameArea: Array<BooleanArray>
+) {
+    for (row in 0 until height) {
+        for (col in 0 until width) {
+            if (gameArea[row][col]) {
+                drawRect(
+                    color = Color.Blue,
+                    size = Size(cellSize.toPx(), cellSize.toPx()),
+                    topLeft = Offset(col * cellSize.toPx(), row * cellSize.toPx())
+                )
             }
         }
-    )
+    }
+}
 
-    // 显示分数和游戏状态等其他元素
-    // ...
+private fun DrawScope.drawCurrentBlock(currentBlock: Array<BooleanArray>, cellSize: Dp) {
+    val numRows = currentBlock.size
+    val numCols = currentBlock[0].size
+
+    for (row in 0 until numRows) {
+        for (col in 0 until numCols) {
+            if (currentBlock[row][col]) {
+                drawRect(
+                    color = Color.Red,
+                    size = Size(cellSize.toPx(), cellSize.toPx()),
+                    topLeft = Offset(col * cellSize.toPx(), row * cellSize.toPx())
+                )
+            }
+        }
+    }
 }
