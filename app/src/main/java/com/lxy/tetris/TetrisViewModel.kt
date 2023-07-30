@@ -1,9 +1,11 @@
 package com.lxy.tetris
 
-import android.graphics.Path
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lxy.tetris.entity.TetrisBlock
+import com.lxy.tetris.entity.TetrisBlocks
 import com.lxy.tetris.entity.Tetromino
 import com.lxy.tetris.entity.Tetrominoes
 import kotlinx.coroutines.delay
@@ -18,34 +20,40 @@ class TetrisViewModel : ViewModel() {
     val uiState = mutableStateOf(false)
 
     // 当前方块
-    val currentBlock = mutableStateOf<Tetromino>(Tetrominoes.getRandomTetromino())
+    val currentTetromino = mutableStateOf(TetrisBlocks.getRandomTetrisBlocks())
 
+    val currentCol = mutableStateOf(0)
+    val currentRow = mutableStateOf(0)
+
+    // 当前方块
 
     // 游戏区域
     val gameArea = mutableStateOf(emptyArray<BooleanArray>())
 
     // 分数
     val score = mutableStateOf(0)
+    // 消除的行数
+    val lines = mutableStateOf(0)
 
     // 方块下落的时间间隔（毫秒）
     private val dropInterval = 500L
 
     // 是否方块已经固定在游戏区域中
-    private var isBlockFixed = false
+    private var isPause = false
+
     // 开始游戏
     fun startGame() {
         // 初始化游戏状态，生成新的方块等
-
-        uiState.value = true
-
         gameArea.value = createEmptyGameArea()
-
+        currentCol.value = gameAreaWidth / 2
+        currentRow.value = 0
         // 生成新的方块
-        currentBlock.value = generateRandomBlock()
+        currentTetromino.value = generateRandomBlock()
 
         // 初始化分数
         score.value = 0
 
+        uiState.value = true
         startDropTimer()
     }
 
@@ -53,13 +61,28 @@ class TetrisViewModel : ViewModel() {
     // 旋转方块
     fun rotateBlock() {
         // 处理方块的旋转逻辑
-        // ...
+        currentTetromino.value.rotateBlock()
+        updatePosition()
+        this.isPause = false
     }
 
-    // 快速下落方块
-    fun dropBlock() {
-        // 处理方块的快速下落逻辑
-        // ...
+    fun leftMoveBlock() {
+        this.isPause = false
+        moveBlock(Direction.Left)
+    }
+
+    fun rightMoveBlock() {
+        this.isPause = false
+        moveBlock(Direction.Right)
+    }
+
+    fun quickDropBlock() {
+        this.isPause = false
+        moveBlock(Direction.Down)
+    }
+
+    fun pauseGame(){
+        this.isPause = !isPause
     }
 
 
@@ -70,11 +93,15 @@ class TetrisViewModel : ViewModel() {
     }
 
     // 生成随机方块
-    private fun generateRandomBlock(): Tetromino {
-        // 简单起见，这里只生成一个简单的 L 形方块
-        var randomTetromino = Tetrominoes.getRandomTetromino()
-        randomTetromino.currentCol = gameAreaWidth / 2
-        return randomTetromino
+    private fun generateRandomBlock(): TetrisBlock {
+
+        currentCol.value = gameAreaWidth / 2
+        currentRow.value = 0
+
+        val block = TetrisBlocks.getRandomTetrisBlocks()
+        block.row = 0
+        block.col = gameAreaWidth / 2
+        return block
     }
 
     // 启动方块下落的定时器
@@ -82,96 +109,106 @@ class TetrisViewModel : ViewModel() {
         viewModelScope.launch {
             while (isActive) {
                 delay(dropInterval)
-                if (!isBlockFixed) {
-                    moveBlock(Direction.Down)
+                if (!isPause) {
+//                    moveBlock(Direction.Down)
+                    if (!isMoveValid(Direction.Down)) {
+                        // 方块无法再向下移动，固定方块在游戏区域中
+                        fixBlock()
+
+                        // 检查并消除已满的行
+                        checkAndRemoveLines()
+                    } else {
+                        currentTetromino.value.row += 1
+                        updatePosition()
+                    }
                 }
             }
         }
     }
 
     // 移动方块
-    fun moveBlock(direction: Direction) {
+    private fun moveBlock(direction: Direction) {
         // 根据方向更新方块的位置
         when (direction) {
             Direction.Left -> {
-                if (isMoveValid()) {
-                    currentBlock.value.currentCol -= 1
+                if (isMoveValid(direction)) {
+                    currentTetromino.value.col -= 1
                 }
             }
+
             Direction.Right -> {
-                if (isMoveValid()) {
-                    currentBlock.value.currentCol += 1
+                if (isMoveValid(direction)) {
+                    currentTetromino.value.col += 1
                 }
             }
+
             Direction.Up -> {
 
             }
+
             Direction.Down -> {
-                if (!isMoveValid()) {
-                    // 方块无法再向下移动，固定方块在游戏区域中
-                    fixBlock()
-
-                    // 检查并消除已满的行
-                    checkAndRemoveLines()
-                } else{
-                    currentBlock.value.currentRow += 1
+                if (isMoveValid(direction)) {
+                    currentTetromino.value.row += 1
                 }
             }
         }
 
-        // 更新游戏区域
-//        updateGameArea()
+        updatePosition()
+
     }
 
-    // 更新游戏区域状态
-    private fun updateGameArea() {
-        val newGameArea = gameArea.value
-        val currentBlock = getCurrentBlock()
+    private fun updatePosition() {
 
-        // 将当前方块的位置更新到游戏区域
-        for (row in 0 until currentBlock.size) {
-            for (col in 0 until currentBlock[0].size) {
-                if (currentBlock[row][col]) {
-                    val newRow = this.currentBlock.value.currentRow + row
-                    val newCol = this.currentBlock.value.currentCol + col
-
-                    // 检查是否超出游戏区域范围，如果超出则忽略
-                    if (newRow in 0 until gameAreaHeight && newCol in 0 until gameAreaWidth) {
-                        newGameArea[newRow][newCol] = true
-                    }
-                }
-            }
-        }
-
-        // 更新游戏区域数据
-        gameArea.value = newGameArea
+        currentCol.value = currentTetromino.value.col
+        currentRow.value = currentTetromino.value.row
     }
+
 
     // 获取当前方块
-    fun getCurrentBlock(): Array<BooleanArray> {
+    private fun getCurrentBlock(): Array<BooleanArray> {
         // 返回当前方块的数据，根据实际游戏逻辑获取
-        return currentBlock.value.shape
+        return currentTetromino.value.shape
     }
 
     // 检查方块是否可以继续移动
-    private fun isMoveValid(): Boolean {
+    private fun isMoveValid(direction: Direction): Boolean {
         val currentBlock = getCurrentBlock()
 
         for (row in currentBlock.indices) {
             for (col in 0 until currentBlock[0].size) {
                 if (currentBlock[row][col]) {
-                    val newRow = this.currentBlock.value.currentRow + row
-                    val newCol = this.currentBlock.value.currentCol + col
+                    var newRow = currentTetromino.value.row + row
+                    var newCol = currentTetromino.value.col + col
+                    when(direction){
+                        Direction.Left -> {
+                            newCol -= 1
+                        }
+                        Direction.Right ->{
+                            newCol += 1
+                        }
+                        Direction.Down ->{
+                            newRow += 1
+                        }
+                        else -> {
+
+                        }
+                    }
+
+
+                    // 检查是否到顶。游戏结束
 
                     // 检查是否超出游戏区域范围
                     if (newRow >= gameAreaHeight || newCol < 0 || newCol >= gameAreaWidth) {
+                        Log.d("TAG1", "isMoveValid: " + newCol)
                         return false
                     }
 
                     // 检查是否与其他方块重叠
                     if (gameArea.value[newRow][newCol]) {
+                        Log.d("TAG2", "isMoveValid: " + newCol)
                         return false
                     }
+
                 }
             }
         }
@@ -186,8 +223,8 @@ class TetrisViewModel : ViewModel() {
         for (row in currentBlock.indices) {
             for (col in 0 until currentBlock[0].size) {
                 if (currentBlock[row][col]) {
-                    val newRow = this.currentBlock.value.currentRow + row
-                    val newCol = this.currentBlock.value.currentCol + col
+                    val newRow = currentTetromino.value.row + row
+                    val newCol = currentTetromino.value.col + col
 
                     // 将方块的位置标记为已固定
                     gameArea.value[newRow][newCol] = true
@@ -195,11 +232,8 @@ class TetrisViewModel : ViewModel() {
             }
         }
 
-        // 方块已经固定，重置当前方块的位置
-        isBlockFixed = true
-
         // 随机生成新的方块
-        this.currentBlock.value = generateRandomBlock()
+        this.currentTetromino.value = generateRandomBlock()
 
     }
 
@@ -227,6 +261,8 @@ class TetrisViewModel : ViewModel() {
 
         // 删除满格的行并在顶部插入新的空行
         if (rowsToRemove.isNotEmpty()) {
+
+            lines.value += rowsToRemove.size
             val newGameArea = createEmptyGameArea()
 
             // 将不需要删除的行复制到新的游戏区域

@@ -18,14 +18,17 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.lxy.tetris.entity.TetrisBlock
+import com.lxy.tetris.entity.Tetromino
 
 @Composable
 fun GameScreen(viewModel: TetrisViewModel) {
     // 游戏区域的宽高和格子大小
     val gameAreaWidth = 10
     val gameAreaHeight = 20
-    val cellSize = 24.dp
-
+    val cellSize = 10.dp
+    val gameArea = remember { viewModel.gameArea }
+    val currentTetromino = remember { viewModel.currentTetromino }
     // 绘制游戏界面
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -56,8 +59,13 @@ fun GameScreen(viewModel: TetrisViewModel) {
                 )
 
                 // 绘制游戏区域内的方块
-                drawGameArea(gameAreaWidth, gameAreaHeight, cellSize, viewModel.gameArea.value)
-                drawCurrentBlock(viewModel.getCurrentBlock(), cellSize)
+                drawGameArea(gameAreaWidth, gameAreaHeight, cellSize, gameArea.value)
+                drawCurrentBlock(
+                    currentTetromino.value,
+                    viewModel.currentRow.value,
+                    viewModel.currentCol.value,
+                    cellSize
+                )
             }
 
             // 下方控制按钮区域
@@ -78,7 +86,7 @@ fun GameScreen(viewModel: TetrisViewModel) {
                         modifier = Modifier.padding(16.dp),
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Button(onClick = { /* 左方按钮点击事件 */ }) {
+                        Button(onClick = { viewModel.pauseGame() }) {
                             Text(text = "暂停")
                         }
                         Spacer(modifier = Modifier.width(8.dp))
@@ -109,12 +117,12 @@ fun GameScreen(viewModel: TetrisViewModel) {
                         modifier = Modifier.padding(16.dp),
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Button(onClick = { /* 左方按钮点击事件 */ }) {
-                            Text(text = "左")
+                        Button(onClick = { viewModel.rotateBlock() }) {
+                            Text(text = "旋转")
                         }
                         Spacer(modifier = Modifier.width(8.dp))
-                        Button(onClick = { /* 下方按钮点击事件 */ }) {
-                            Text(text = "旋转")
+                        Button(onClick = { viewModel.rightMoveBlock() }) {
+                            Text(text = "右")
                         }
 
                     }
@@ -122,12 +130,13 @@ fun GameScreen(viewModel: TetrisViewModel) {
                         modifier = Modifier.padding(16.dp),
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Button(onClick = { /* 左方按钮点击事件 */ }) {
-                            Text(text = "下")
+
+                        Button(onClick = { viewModel.leftMoveBlock() }) {
+                            Text(text = "左")
                         }
                         Spacer(modifier = Modifier.width(8.dp))
-                        Button(onClick = { /* 下方按钮点击事件 */ }) {
-                            Text(text = "右")
+                        Button(onClick = { viewModel.quickDropBlock() }) {
+                            Text(text = "下")
                         }
 
                     }
@@ -163,17 +172,26 @@ private fun DrawScope.drawGameArea(
     }
 }
 
-private fun DrawScope.drawCurrentBlock(currentBlock: Array<BooleanArray>, cellSize: Dp) {
+private fun DrawScope.drawCurrentBlock(
+    tetris: TetrisBlock,
+    currentRow : Int,
+    currentcol : Int,
+    cellSize: Dp
+) {
+    val currentBlock = tetris.shape
     val numRows = currentBlock.size
     val numCols = currentBlock[0].size
 
     for (row in 0 until numRows) {
         for (col in 0 until numCols) {
+            // 这里不做是否出界的验证，因为更新方块位置之前，已经验证过一次了
             if (currentBlock[row][col]) {
+                val newRow = currentRow + row
+                val newCol = currentcol + col
                 drawRect(
                     color = Color.Red,
                     size = Size(cellSize.toPx(), cellSize.toPx()),
-                    topLeft = Offset(col * cellSize.toPx(), row * cellSize.toPx())
+                    topLeft = Offset(newCol * cellSize.toPx(), newRow * cellSize.toPx())
                 )
             }
         }
