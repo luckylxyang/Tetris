@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -20,15 +21,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lxy.tetris.entity.TetrisBlock
 import com.lxy.tetris.entity.Tetromino
+import com.lxy.tetris.ui.theme.BrickColorAlpha
+import com.lxy.tetris.ui.theme.BrickColorFill
 
 @Composable
 fun GameScreen(viewModel: TetrisViewModel) {
     // 游戏区域的宽高和格子大小
     val gameAreaWidth = 10
     val gameAreaHeight = 20
-    val cellSize = 10.dp
+    val cellSize = 14.dp
     val gameArea = remember { viewModel.gameArea }
     val currentTetromino = remember { viewModel.currentTetromino }
+    val bgColor = MaterialTheme.colorScheme.onBackground
     // 绘制游戏界面
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -59,8 +63,9 @@ fun GameScreen(viewModel: TetrisViewModel) {
                 )
 
                 // 绘制游戏区域内的方块
-                drawGameArea(gameAreaWidth, gameAreaHeight, cellSize, gameArea.value)
+                drawGameArea(bgColor, gameAreaWidth, gameAreaHeight, cellSize, gameArea.value)
                 drawCurrentBlock(
+                    bgColor,
                     currentTetromino.value,
                     viewModel.currentRow.value,
                     viewModel.currentCol.value,
@@ -142,7 +147,6 @@ fun GameScreen(viewModel: TetrisViewModel) {
                     }
                 }
 
-
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -154,6 +158,7 @@ fun GameScreen(viewModel: TetrisViewModel) {
 }
 
 private fun DrawScope.drawGameArea(
+    bgColor: Color,
     width: Int,
     height: Int,
     cellSize: Dp,
@@ -162,9 +167,16 @@ private fun DrawScope.drawGameArea(
     for (row in 0 until height) {
         for (col in 0 until width) {
             if (gameArea[row][col]) {
-                drawRect(
-                    color = Color.Blue,
-                    size = Size(cellSize.toPx(), cellSize.toPx()),
+//                drawRect(
+//                    color = Color.Blue,
+//                    size = Size(cellSize.toPx(), cellSize.toPx()),
+//                    topLeft = Offset(col * cellSize.toPx(), row * cellSize.toPx())
+//                )
+
+                drawBrick(
+                    bgColor = bgColor,
+                    brickSize = cellSize.toPx(),
+                    BrickColorAlpha,
                     topLeft = Offset(col * cellSize.toPx(), row * cellSize.toPx())
                 )
             }
@@ -173,6 +185,7 @@ private fun DrawScope.drawGameArea(
 }
 
 private fun DrawScope.drawCurrentBlock(
+    bgColor : Color,
     tetris: TetrisBlock,
     currentRow : Int,
     currentcol : Int,
@@ -188,12 +201,37 @@ private fun DrawScope.drawCurrentBlock(
             if (currentBlock[row][col]) {
                 val newRow = currentRow + row
                 val newCol = currentcol + col
-                drawRect(
-                    color = Color.Red,
-                    size = Size(cellSize.toPx(), cellSize.toPx()),
+                drawBrick(
+                    bgColor = bgColor,
+                    brickSize = cellSize.toPx(),
+                    BrickColorFill,
                     topLeft = Offset(newCol * cellSize.toPx(), newRow * cellSize.toPx())
                 )
             }
         }
+    }
+}
+
+private fun DrawScope.drawBrick(bgColor: Color, brickSize: Float, brickColor: Color, topLeft : Offset) {
+    drawRect(color = brickColor, size = Size(width = brickSize, height = brickSize))
+    val strokeWidth = brickSize / 9f
+    translate(left = strokeWidth, top = strokeWidth) {
+        drawRect(
+            color = bgColor,
+            size = Size(
+                width = brickSize - 2 * strokeWidth,
+                height = brickSize - 2 * strokeWidth
+            ),
+            topLeft = topLeft
+        )
+    }
+    val brickInnerSize = brickSize / 2.0f
+    val translateLeft = (brickSize - brickInnerSize) / 2
+    translate(left = translateLeft, top = translateLeft) {
+        drawRect(
+            color = brickColor,
+            size = Size(width = brickInnerSize, height = brickInnerSize),
+            topLeft = topLeft
+        )
     }
 }
