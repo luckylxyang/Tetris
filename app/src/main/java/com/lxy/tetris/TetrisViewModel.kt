@@ -8,6 +8,8 @@ import com.lxy.tetris.entity.TetrisBlock
 import com.lxy.tetris.entity.TetrisBlocks
 import com.lxy.tetris.entity.Tetromino
 import com.lxy.tetris.entity.Tetrominoes
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -33,13 +35,18 @@ class TetrisViewModel : ViewModel() {
     // 分数
     val score = mutableStateOf(0)
     // 消除的行数
-    val lines = mutableStateOf(0)
+    private val lines = mutableStateOf(0)
 
     // 方块下落的时间间隔（毫秒）
     private val dropInterval = 500L
 
-    // 是否方块已经固定在游戏区域中
+    // 暂停游戏
     private var isPause = false
+
+    private lateinit var dropJob : Job
+
+    // 音效控制
+    val soundState = mutableStateOf(true)
 
     // 开始游戏
     fun startGame() {
@@ -54,6 +61,7 @@ class TetrisViewModel : ViewModel() {
         score.value = 0
 
         uiState.value = true
+        this.isPause = false
         startDropTimer()
     }
 
@@ -85,6 +93,15 @@ class TetrisViewModel : ViewModel() {
         this.isPause = !isPause
     }
 
+    fun restartGame(){
+        dropJob.cancel()
+        startGame()
+    }
+
+    fun soundControl(){
+        soundState.value = !soundState.value
+    }
+
 
     private fun createEmptyGameArea(): Array<BooleanArray> {
         return Array(gameAreaHeight) {
@@ -106,7 +123,7 @@ class TetrisViewModel : ViewModel() {
 
     // 启动方块下落的定时器
     private fun startDropTimer() {
-        viewModelScope.launch {
+        dropJob = viewModelScope.launch {
             while (isActive) {
                 delay(dropInterval)
                 if (!isPause) {
@@ -206,6 +223,9 @@ class TetrisViewModel : ViewModel() {
                     // 检查是否与其他方块重叠
                     if (gameArea.value[newRow][newCol]) {
                         Log.d("TAG2", "isMoveValid: " + newCol)
+                        if (newRow <= 1) {
+                            isPause = true
+                        }
                         return false
                     }
 
@@ -263,6 +283,7 @@ class TetrisViewModel : ViewModel() {
         if (rowsToRemove.isNotEmpty()) {
 
             lines.value += rowsToRemove.size
+            score.value += rowsToRemove.size
             val newGameArea = createEmptyGameArea()
 
             // 将不需要删除的行复制到新的游戏区域

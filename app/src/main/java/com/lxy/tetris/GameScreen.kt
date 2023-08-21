@@ -1,10 +1,17 @@
 package com.lxy.tetris
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -17,6 +24,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lxy.tetris.entity.TetrisBlock
@@ -75,31 +83,42 @@ fun GameScreen(viewModel: TetrisViewModel) {
 
             // 下方控制按钮区域
             Row(
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier.padding(4.dp, 16.dp),
                 horizontalArrangement = Arrangement.Center
             ) {
                 // 分为左右两块，
                 // 左侧有 暂停、音效、重玩、掉落
 
+                val source = if(viewModel.soundState.value) R.drawable.ic_sound else R.drawable.ic_sound_off
                 Column(
                     modifier = Modifier
-                        .padding(16.dp)
+                        .padding(8.dp)
                         .weight(1f),
                     verticalArrangement = Arrangement.Center
                 ) {
                     Row(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(4.dp),
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Button(onClick = { viewModel.pauseGame() }) {
-                            Text(text = "暂停")
+                        FloatingActionButton(
+                            shape = Shapes(small = RoundedCornerShape(50.dp)).small,
+                            onClick = { viewModel.pauseGame() }) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_pause),
+                                contentDescription = "暂停"
+                            )
                         }
                         Spacer(modifier = Modifier.width(8.dp))
-                        Button(onClick = { /* 下方按钮点击事件 */ }) {
-                            Text(text = "音效")
+                        FloatingActionButton(
+                            shape = Shapes(small = RoundedCornerShape(50.dp)).small,
+                            onClick = { viewModel.soundControl() }) {
+                            Icon(
+                                painter = painterResource(source),
+                                contentDescription = "音效"
+                            )
                         }
                         Spacer(modifier = Modifier.width(8.dp))
-                        Button(onClick = { /* 右方按钮点击事件 */ }) {
+                        Button(onClick = { viewModel.restartGame() }) {
                             Text(text = "重玩")
                         }
                     }
@@ -113,35 +132,59 @@ fun GameScreen(viewModel: TetrisViewModel) {
                 // 右侧有左、右、下、和旋转
                 Column(
                     modifier = Modifier
-                        .padding(16.dp)
+                        .padding(8.dp)
                         .weight(1f)
                         .graphicsLayer(rotationZ = 45f),
                     verticalArrangement = Arrangement.Center
                 ) {
                     Row(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(8.dp),
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Button(onClick = { viewModel.rotateBlock() }) {
-                            Text(text = "旋转")
+                        FloatingActionButton(
+                            modifier = Modifier.graphicsLayer(rotationZ = -45f),
+                            shape = Shapes(small = RoundedCornerShape(50.dp)).small,
+                            onClick = { viewModel.rotateBlock() }) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_rotate),
+                                contentDescription = "旋转"
+                            )
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Button(onClick = { viewModel.rightMoveBlock() }) {
-                            Text(text = "右")
+                        Spacer(modifier = Modifier.width(16.dp))
+                        FloatingActionButton(
+                            modifier = Modifier.graphicsLayer(rotationZ = -45f),
+                            shape = Shapes(small = RoundedCornerShape(50.dp)).small,
+                            onClick = { viewModel.rightMoveBlock() }) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_right),
+                                contentDescription = "向右"
+                            )
                         }
 
                     }
                     Row(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(8.dp),
                         horizontalArrangement = Arrangement.Center
                     ) {
 
-                        Button(onClick = { viewModel.leftMoveBlock() }) {
-                            Text(text = "左")
+                        FloatingActionButton(
+                            modifier = Modifier.graphicsLayer(rotationZ = -45f),
+                            shape = Shapes(small = RoundedCornerShape(50.dp)).small,
+                            onClick = { viewModel.leftMoveBlock() }) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_left),
+                                contentDescription = "向左"
+                            )
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Button(onClick = { viewModel.quickDropBlock() }) {
-                            Text(text = "下")
+                        Spacer(modifier = Modifier.width(16.dp))
+                        FloatingActionButton(
+                            modifier = Modifier.graphicsLayer(rotationZ = -45f),
+                            shape = Shapes(small = RoundedCornerShape(50.dp)).small,
+                            onClick = { viewModel.quickDropBlock() }) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_down),
+                                contentDescription = "向下"
+                            )
                         }
 
                     }
@@ -185,10 +228,10 @@ private fun DrawScope.drawGameArea(
 }
 
 private fun DrawScope.drawCurrentBlock(
-    bgColor : Color,
+    bgColor: Color,
     tetris: TetrisBlock,
-    currentRow : Int,
-    currentcol : Int,
+    currentRow: Int,
+    currentcol: Int,
     cellSize: Dp
 ) {
     val currentBlock = tetris.shape
@@ -212,7 +255,12 @@ private fun DrawScope.drawCurrentBlock(
     }
 }
 
-private fun DrawScope.drawBrick(bgColor: Color, brickSize: Float, brickColor: Color, topLeft : Offset) {
+private fun DrawScope.drawBrick(
+    bgColor: Color,
+    brickSize: Float,
+    brickColor: Color,
+    topLeft: Offset
+) {
     drawRect(color = brickColor, size = Size(width = brickSize, height = brickSize))
     val strokeWidth = brickSize / 9f
     translate(left = strokeWidth, top = strokeWidth) {
