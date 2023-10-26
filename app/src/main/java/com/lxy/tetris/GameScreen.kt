@@ -38,8 +38,8 @@ fun GameScreen(viewModel: TetrisViewModel) {
     val gameAreaWidth = 10
     val gameAreaHeight = 20
     val cellSize = 14.dp
-    val gameArea = remember { viewModel.gameArea }
-    val currentTetromino = remember { viewModel.currentTetromino }
+    val gameArea by viewModel.gameArea.collectAsState()
+    val currentTetromino by viewModel.currentTetromino.collectAsState()
     val bgColor = MaterialTheme.colorScheme.onBackground
     // 绘制游戏界面
     Surface(
@@ -71,10 +71,10 @@ fun GameScreen(viewModel: TetrisViewModel) {
                 )
 
                 // 绘制游戏区域内的方块
-                drawGameArea(bgColor, gameAreaWidth, gameAreaHeight, cellSize, gameArea.value)
+                drawGameArea(bgColor, gameAreaWidth, gameAreaHeight, cellSize, gameArea)
                 drawCurrentBlock(
                     bgColor,
-                    currentTetromino.value,
+                    currentTetromino,
                     viewModel.currentRow.value,
                     viewModel.currentCol.value,
                     cellSize

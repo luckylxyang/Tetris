@@ -11,6 +11,7 @@ import com.lxy.tetris.entity.Tetrominoes
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
@@ -22,7 +23,7 @@ class TetrisViewModel : ViewModel() {
     val uiState = mutableStateOf(false)
 
     // 当前方块
-    val currentTetromino = mutableStateOf(TetrisBlocks.getRandomTetrisBlocks())
+    val currentTetromino = MutableStateFlow(TetrisBlocks.getRandomTetrisBlocks())
 
     val currentCol = mutableStateOf(0)
     val currentRow = mutableStateOf(0)
@@ -30,7 +31,7 @@ class TetrisViewModel : ViewModel() {
     // 当前方块
 
     // 游戏区域
-    val gameArea = mutableStateOf(emptyArray<BooleanArray>())
+    val gameArea = MutableStateFlow(emptyArray<BooleanArray>())
 
     // 分数
     val score = mutableStateOf(0)
