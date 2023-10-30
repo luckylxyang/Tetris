@@ -20,7 +20,7 @@ class TetrisViewModel : ViewModel() {
     val uiState = mutableStateOf(false)
 
     // 当前方块
-    val currentTetromino = MutableStateFlow(TetrisBlocks.getRandomTetrisBlocks())
+    private val currentTetromino = MutableStateFlow(TetrisBlocks.getRandomTetrisBlocks())
     val currentTetrisArea = MutableStateFlow(emptyArray<BooleanArray>())
 
     val currentCol = mutableStateOf(0)
@@ -67,20 +67,9 @@ class TetrisViewModel : ViewModel() {
     // 旋转方块
     fun rotateBlock() {
         // 处理方块的旋转逻辑
-        printArrays( currentTetrisArea.value)
         currentTetrisArea.value = currentTetromino.value.rotateBlock()
-        printArrays( currentTetrisArea.value)
         updatePosition()
         this.isPause = false
-    }
-
-    fun printArrays(arrays: Array<BooleanArray>){
-        arrays.forEach {
-            it.forEach {
-                print("$it，")
-            }
-            println()
-        }
     }
 
     fun leftMoveBlock() {
