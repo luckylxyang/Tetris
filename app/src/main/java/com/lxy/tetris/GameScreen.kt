@@ -1,15 +1,11 @@
 package com.lxy.tetris
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Surface
@@ -21,14 +17,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.lxy.tetris.entity.TetrisBlock
-import com.lxy.tetris.entity.Tetromino
 import com.lxy.tetris.ui.theme.BrickColorAlpha
 import com.lxy.tetris.ui.theme.BrickColorFill
 
@@ -39,7 +32,7 @@ fun GameScreen(viewModel: TetrisViewModel) {
     val gameAreaHeight = 20
     val cellSize = 14.dp
     val gameArea by viewModel.gameArea.collectAsState()
-    val currentTetromino by viewModel.currentTetromino.collectAsState()
+    val currentTetrisArea by viewModel.currentTetrisArea.collectAsState()
     val bgColor = MaterialTheme.colorScheme.onBackground
     // 绘制游戏界面
     Surface(
@@ -74,7 +67,7 @@ fun GameScreen(viewModel: TetrisViewModel) {
                 drawGameArea(bgColor, gameAreaWidth, gameAreaHeight, cellSize, gameArea)
                 drawCurrentBlock(
                     bgColor,
-                    currentTetromino,
+                    currentTetrisArea,
                     viewModel.currentRow.value,
                     viewModel.currentCol.value,
                     cellSize
@@ -229,19 +222,18 @@ private fun DrawScope.drawGameArea(
 
 private fun DrawScope.drawCurrentBlock(
     bgColor: Color,
-    tetris: TetrisBlock,
+    tetris: Array<BooleanArray>,
     currentRow: Int,
     currentcol: Int,
     cellSize: Dp
 ) {
-    val currentBlock = tetris.shape
-    val numRows = currentBlock.size
-    val numCols = currentBlock[0].size
+    val numRows = tetris.size
+    val numCols = tetris[0].size
 
     for (row in 0 until numRows) {
         for (col in 0 until numCols) {
             // 这里不做是否出界的验证，因为更新方块位置之前，已经验证过一次了
-            if (currentBlock[row][col]) {
+            if (tetris[row][col]) {
                 val newRow = currentRow + row
                 val newCol = currentcol + col
                 drawBrick(

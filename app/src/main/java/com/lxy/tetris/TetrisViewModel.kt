@@ -6,10 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lxy.tetris.entity.TetrisBlock
 import com.lxy.tetris.entity.TetrisBlocks
-import com.lxy.tetris.entity.Tetromino
-import com.lxy.tetris.entity.Tetrominoes
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
@@ -24,6 +21,7 @@ class TetrisViewModel : ViewModel() {
 
     // 当前方块
     val currentTetromino = MutableStateFlow(TetrisBlocks.getRandomTetrisBlocks())
+    val currentTetrisArea = MutableStateFlow(emptyArray<BooleanArray>())
 
     val currentCol = mutableStateOf(0)
     val currentRow = mutableStateOf(0)
@@ -57,7 +55,6 @@ class TetrisViewModel : ViewModel() {
         currentRow.value = 0
         // 生成新的方块
         currentTetromino.value = generateRandomBlock()
-
         // 初始化分数
         score.value = 0
 
@@ -70,9 +67,20 @@ class TetrisViewModel : ViewModel() {
     // 旋转方块
     fun rotateBlock() {
         // 处理方块的旋转逻辑
-        currentTetromino.value.rotateBlock()
+        printArrays( currentTetrisArea.value)
+        currentTetrisArea.value = currentTetromino.value.rotateBlock()
+        printArrays( currentTetrisArea.value)
         updatePosition()
         this.isPause = false
+    }
+
+    fun printArrays(arrays: Array<BooleanArray>){
+        arrays.forEach {
+            it.forEach {
+                print("$it，")
+            }
+            println()
+        }
     }
 
     fun leftMoveBlock() {
@@ -117,8 +125,9 @@ class TetrisViewModel : ViewModel() {
         currentRow.value = 0
 
         val block = TetrisBlocks.getRandomTetrisBlocks()
-        block.row = 0
-        block.col = gameAreaWidth / 2
+        this.currentTetrisArea.value = block.shape
+//        block.row = 0
+//        block.col = gameAreaWidth / 2
         return block
     }
 
@@ -136,7 +145,7 @@ class TetrisViewModel : ViewModel() {
                         // 检查并消除已满的行
                         checkAndRemoveLines()
                     } else {
-                        currentTetromino.value.row += 1
+                        currentRow.value += 1
                         updatePosition()
                     }
                 }
@@ -150,13 +159,13 @@ class TetrisViewModel : ViewModel() {
         when (direction) {
             Direction.Left -> {
                 if (isMoveValid(direction)) {
-                    currentTetromino.value.col -= 1
+                    currentCol.value -= 1
                 }
             }
 
             Direction.Right -> {
                 if (isMoveValid(direction)) {
-                    currentTetromino.value.col += 1
+                    currentCol.value += 1
                 }
             }
 
@@ -166,7 +175,7 @@ class TetrisViewModel : ViewModel() {
 
             Direction.Down -> {
                 if (isMoveValid(direction)) {
-                    currentTetromino.value.row += 1
+                    currentRow.value += 1
                 }
             }
         }
@@ -177,8 +186,8 @@ class TetrisViewModel : ViewModel() {
 
     private fun updatePosition() {
 
-        currentCol.value = currentTetromino.value.col
-        currentRow.value = currentTetromino.value.row
+//        currentCol.value = currentTetromino.value.col
+//        currentRow.value = currentTetromino.value.row
     }
 
 
@@ -195,8 +204,8 @@ class TetrisViewModel : ViewModel() {
         for (row in currentBlock.indices) {
             for (col in 0 until currentBlock[0].size) {
                 if (currentBlock[row][col]) {
-                    var newRow = currentTetromino.value.row + row
-                    var newCol = currentTetromino.value.col + col
+                    var newRow = currentRow.value + row
+                    var newCol = currentCol.value + col
                     when(direction){
                         Direction.Left -> {
                             newCol -= 1
@@ -244,8 +253,8 @@ class TetrisViewModel : ViewModel() {
         for (row in currentBlock.indices) {
             for (col in 0 until currentBlock[0].size) {
                 if (currentBlock[row][col]) {
-                    val newRow = currentTetromino.value.row + row
-                    val newCol = currentTetromino.value.col + col
+                    val newRow = currentRow.value + row
+                    val newCol = currentCol.value + col
 
                     // 将方块的位置标记为已固定
                     gameArea.value[newRow][newCol] = true

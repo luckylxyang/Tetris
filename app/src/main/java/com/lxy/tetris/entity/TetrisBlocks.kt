@@ -4,21 +4,18 @@ import kotlin.random.Random
 
 class J() : TetrisBlock() {
     override var shape: Array<BooleanArray>
-        get() = arrayOf(
-            booleanArrayOf(false, true, false),
-            booleanArrayOf(false, true, false),
-            booleanArrayOf(true, true, false)
-        )
+        get() = rotateBlock()
         set(value) {}
 
     override fun rotateBlock(): Array<BooleanArray> {
+        println("J's rotateBlock()")
         rotations++;
-        if (rotations > 4) {
-            rotations = 1;
+        if (rotations > 3) {
+            rotations = 0
         }
         when (rotations) {
             1 -> {
-                shape = arrayOf(
+                return arrayOf(
                     booleanArrayOf(true, false, false),
                     booleanArrayOf(true, true, true),
                     booleanArrayOf(false, false, false)
@@ -26,30 +23,30 @@ class J() : TetrisBlock() {
             }
 
             2 -> {
-                shape = arrayOf(
-                    booleanArrayOf(true, true, true),
-                    booleanArrayOf(false, false, true),
-                    booleanArrayOf(false, false, false)
-                )
-            }
-
-            3 -> {
-                shape = arrayOf(
+                return arrayOf(
                     booleanArrayOf(false, true, true),
                     booleanArrayOf(false, true, false),
                     booleanArrayOf(false, true, false)
                 )
             }
 
-            4 -> {
-                shape = arrayOf(
+            3 -> {
+                return arrayOf(
                     booleanArrayOf(true, true, true),
                     booleanArrayOf(false, false, true),
                     booleanArrayOf(false, false, false)
                 )
             }
+
+            else -> {
+                return arrayOf(
+                    booleanArrayOf(false, true, false),
+                    booleanArrayOf(false, true, false),
+                    booleanArrayOf(true, true, false)
+                )
+            }
         }
-        return shape
+
     }
 }
 
@@ -63,208 +60,189 @@ class O() : TetrisBlock() {
         set(value) {}
 
     override fun rotateBlock(): Array<BooleanArray> {
+        println("O's rotateBlock()")
         return shape
     }
 }
 
 class I() : TetrisBlock() {
     override var shape: Array<BooleanArray>
-        get() = arrayOf(
-            booleanArrayOf(false, true, false, false),
-            booleanArrayOf(false, true, false, false),
-            booleanArrayOf(false, true, false, false),
-            booleanArrayOf(false, true, false, false)
-        )
+        get() = rotateBlock()
         set(value) {}
 
     override fun rotateBlock(): Array<BooleanArray> {
-        rotations++;
-        if (rotations > 2) {
-            rotations = 1;
+        println("I's rotateBlock()")
+        rotations++
+        if (rotations > 1) {
+            rotations = 0
         }
         when (rotations) {
             1 -> {
-                shape = arrayOf(
-                    booleanArrayOf(false, true, false, false),
-                    booleanArrayOf(false, true, false, false),
-                    booleanArrayOf(false, true, false, false),
-                    booleanArrayOf(false, true, false, false)
-                )
-                row -= 1
-                col += 1
-            }
-
-            else -> {
-                shape = arrayOf(
+                return arrayOf(
                     booleanArrayOf(false, false, false, false),
                     booleanArrayOf(true, true, true, true),
                     booleanArrayOf(false, false, false, false),
                     booleanArrayOf(false, false, false, false)
                 )
-                row += 1
-                col -= 1
+            }
+
+            else -> {
+                return arrayOf(
+                    booleanArrayOf(false, true, false, false),
+                    booleanArrayOf(false, true, false, false),
+                    booleanArrayOf(false, true, false, false),
+                    booleanArrayOf(false, true, false, false)
+                )
             }
         }
-        return shape
     }
 }
 
 class L() : TetrisBlock() {
     override var shape: Array<BooleanArray>
-        get() = arrayOf(
-            booleanArrayOf(false, true, false),
-            booleanArrayOf(false, true, false),
-            booleanArrayOf(false, true, true),
-        )
+        get() = rotateBlock()
         set(value) {}
 
     override fun rotateBlock(): Array<BooleanArray> {
-        rotations++;
+        println("L's rotateBlock()")
+        rotations++
         if (rotations > 2) {
-            rotations = 1;
+            rotations = 0
         }
         when (rotations) {
             1 -> {
-                shape = arrayOf(
+                return arrayOf(
                     booleanArrayOf(false, false, false),
                     booleanArrayOf(true, true, true),
                     booleanArrayOf(true, false, false),
                 )
-                row += 1
-                col -= 1
             }
             2 -> {
-                shape = arrayOf(
-                    booleanArrayOf(false, false, false),
-                    booleanArrayOf(true, true, true),
-                    booleanArrayOf(true, false, false),
-                )
-                row += 1
-                col -= 1
-            }
-
-            3 -> {
-                shape = arrayOf(
+                return arrayOf(
                     booleanArrayOf(true, true, false),
                     booleanArrayOf(false, true, false),
                     booleanArrayOf(false, true, false),
                 )
-                row += 1
-                col -= 1
+            }
+
+            else -> {
+                return arrayOf(
+                    booleanArrayOf(false, true, false),
+                    booleanArrayOf(false, true, false),
+                    booleanArrayOf(false, true, true),
+                )
             }
         }
-        return shape
     }
 }
 
 class S() : TetrisBlock() {
     override var shape: Array<BooleanArray>
-        get() = arrayOf(
-            booleanArrayOf(false, true, true),
-            booleanArrayOf(true, true, false),
-            booleanArrayOf(false, false, false),
-        )
+        get() = rotateBlock()
         set(value) {}
 
     override fun rotateBlock(): Array<BooleanArray> {
+        println("S's rotateBlock()")
         rotations++;
-        if (rotations > 2) {
-            rotations = 1;
+        if (rotations > 1) {
+            rotations = 0
         }
         when (rotations) {
             1 -> {
-                shape = arrayOf(
-                    booleanArrayOf(false, true, true),
-                    booleanArrayOf(true, true, false),
-                    booleanArrayOf(false, false, false),
-                )
-                row += 1
-                col -= 1
-            }
-
-            else -> {
-                shape = arrayOf(
+                return arrayOf(
                     booleanArrayOf(false, true, false),
                     booleanArrayOf(false, true, true),
                     booleanArrayOf(false, false, true),
                 )
-                row -= 1
-                col += 1
+            }
+
+            else -> {
+                return arrayOf(
+                    booleanArrayOf(false, true, true),
+                    booleanArrayOf(true, true, false),
+                    booleanArrayOf(false, false, false),
+                )
             }
         }
-        return shape
+
     }
 }
 
 class Z() : TetrisBlock() {
     override var shape: Array<BooleanArray>
-        get() = arrayOf(
-            booleanArrayOf(true, true, false),
-            booleanArrayOf(false, true, true),
-            booleanArrayOf(false, false, false),
-        )
+        get() = rotateBlock()
         set(value) {}
 
     override fun rotateBlock(): Array<BooleanArray> {
+        println("Z's rotateBlock()")
         rotations++;
-        if (rotations > 2) {
-            rotations = 1;
+        if (rotations > 1) {
+            rotations = 0
         }
         when (rotations) {
-            1 -> {
-                shape = arrayOf(
+            0 -> {
+                return arrayOf(
                     booleanArrayOf(true, true, false),
                     booleanArrayOf(false, true, true),
                     booleanArrayOf(false, false, false),
                 )
-                col -= 1
             }
 
             else -> {
-                shape = arrayOf(
+                return arrayOf(
                     booleanArrayOf(false, false, true),
                     booleanArrayOf(false, true, true),
                     booleanArrayOf(false, true, false),
                 )
-                col += 1
             }
         }
-        return shape
+
     }
 }
 
-class T() : TetrisBlock() {
+class T : TetrisBlock() {
     override var shape: Array<BooleanArray>
-        get() = arrayOf(
-            booleanArrayOf(false, true, false),
-            booleanArrayOf(true, true, false),
-            booleanArrayOf(false, true, false),
-        )
+        get() = rotateBlock()
         set(value) {}
 
     override fun rotateBlock(): Array<BooleanArray> {
+        println("T's rotateBlock()")
         rotations++;
-        if (rotations > 2) {
-            rotations = 1;
+        if (rotations > 3) {
+            rotations = 0
         }
         when (rotations) {
             1 -> {
-                shape = arrayOf(
+                return arrayOf(
                     booleanArrayOf(false, true, false),
-                    booleanArrayOf(true, true, false),
+                    booleanArrayOf(true, true, true),
+                    booleanArrayOf(false, false, false),
+                )
+            }
+            2 -> {
+                return arrayOf(
+                    booleanArrayOf(false, true, false),
+                    booleanArrayOf(false, true, true),
+                    booleanArrayOf(false, true, false),
+                )
+            }
+            3 -> {
+                return arrayOf(
+                    booleanArrayOf(false, false, false),
+                    booleanArrayOf(true, true, true),
                     booleanArrayOf(false, true, false),
                 )
             }
 
             else -> {
-                shape = arrayOf(
+                return arrayOf(
                     booleanArrayOf(false, true, false),
                     booleanArrayOf(true, true, false),
                     booleanArrayOf(false, true, false),
                 )
             }
         }
-        return shape
+
     }
 }
 
@@ -277,13 +255,15 @@ object TetrisBlocks {
         S(),
         Z(),
         T(),
-        O() /*...*/
+        O()
     )
 
     // 随机生成一个方块
     fun getRandomTetrisBlocks(): TetrisBlock {
         val randomIndex = Random.nextInt(allTetrisBlocks.size)
-        return allTetrisBlocks[randomIndex]
+        val tetrisBlock = allTetrisBlocks[randomIndex]
+        println("It's getRandomTetrisBlocks is ${tetrisBlock.javaClass.name}")
+        return tetrisBlock
     }
 
 }
