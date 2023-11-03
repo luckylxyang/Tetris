@@ -33,16 +33,17 @@ class TetrisViewModel : ViewModel() {
 
     // 分数
     val score = mutableStateOf(0)
+
     // 消除的行数
     private val lines = mutableStateOf(0)
 
     // 方块下落的时间间隔（毫秒）
-    private val dropInterval = 500L
+    private val dropInterval = 300L
 
     // 暂停游戏
     private var isPause = false
 
-    private lateinit var dropJob : Job
+    private lateinit var dropJob: Job
 
     // 音效控制
     val soundState = mutableStateOf(true)
@@ -66,10 +67,13 @@ class TetrisViewModel : ViewModel() {
 
     // 旋转方块
     fun rotateBlock() {
-        // 处理方块的旋转逻辑
-        currentTetrisArea.value = currentTetromino.value.rotateBlock()
-        updatePosition()
         this.isPause = false
+        // 处理方块的旋转逻辑
+        val rotateBlock = currentTetromino.value.rotateBlock()
+        if (isMoveValid(Direction.Up, rotateBlock)) {
+            currentTetromino.value.shape = rotateBlock
+            currentTetrisArea.value = currentTetromino.value.shape
+        }
     }
 
     fun leftMoveBlock() {
@@ -87,16 +91,20 @@ class TetrisViewModel : ViewModel() {
         moveBlock(Direction.Down)
     }
 
-    fun pauseGame(){
+    fun pauseGame() {
         this.isPause = !isPause
     }
 
-    fun restartGame(){
+    private fun endGame() {
+        dropJob.cancel()
+    }
+
+    fun restartGame() {
         dropJob.cancel()
         startGame()
     }
 
-    fun soundControl(){
+    fun soundControl() {
         soundState.value = !soundState.value
     }
 
@@ -115,8 +123,6 @@ class TetrisViewModel : ViewModel() {
 
         val block = TetrisBlocks.getRandomTetrisBlocks()
         this.currentTetrisArea.value = block.shape
-//        block.row = 0
-//        block.col = gameAreaWidth / 2
         return block
     }
 
@@ -126,8 +132,10 @@ class TetrisViewModel : ViewModel() {
             while (isActive) {
                 delay(dropInterval)
                 if (!isPause) {
-//                    moveBlock(Direction.Down)
                     if (!isMoveValid(Direction.Down)) {
+                        if (isPause) {
+                            endGame();
+                        }
                         // 方块无法再向下移动，固定方块在游戏区域中
                         fixBlock()
 
@@ -135,7 +143,6 @@ class TetrisViewModel : ViewModel() {
                         checkAndRemoveLines()
                     } else {
                         currentRow.value += 1
-                        updatePosition()
                     }
                 }
             }
@@ -158,25 +165,14 @@ class TetrisViewModel : ViewModel() {
                 }
             }
 
-            Direction.Up -> {
-
-            }
-
             Direction.Down -> {
                 if (isMoveValid(direction)) {
                     currentRow.value += 1
                 }
             }
+
+            else -> {}
         }
-
-        updatePosition()
-
-    }
-
-    private fun updatePosition() {
-
-//        currentCol.value = currentTetromino.value.col
-//        currentRow.value = currentTetromino.value.row
     }
 
 
@@ -189,29 +185,32 @@ class TetrisViewModel : ViewModel() {
     // 检查方块是否可以继续移动
     private fun isMoveValid(direction: Direction): Boolean {
         val currentBlock = getCurrentBlock()
+        return isMoveValid(direction, currentBlock)
+    }
 
+    private fun isMoveValid(direction: Direction, currentBlock: Array<BooleanArray>) : Boolean {
         for (row in currentBlock.indices) {
             for (col in 0 until currentBlock[0].size) {
                 if (currentBlock[row][col]) {
                     var newRow = currentRow.value + row
                     var newCol = currentCol.value + col
-                    when(direction){
+                    when (direction) {
                         Direction.Left -> {
                             newCol -= 1
                         }
-                        Direction.Right ->{
+
+                        Direction.Right -> {
                             newCol += 1
                         }
-                        Direction.Down ->{
+
+                        Direction.Down -> {
                             newRow += 1
                         }
+
                         else -> {
 
                         }
                     }
-
-
-                    // 检查是否到顶。游戏结束
 
                     // 检查是否超出游戏区域范围
                     if (newRow >= gameAreaHeight || newCol < 0 || newCol >= gameAreaWidth) {
@@ -223,6 +222,7 @@ class TetrisViewModel : ViewModel() {
                     if (gameArea.value[newRow][newCol]) {
                         Log.d("TAG2", "isMoveValid: " + newCol)
                         if (newRow <= 1) {
+                            // 方块到顶，游戏结束
                             isPause = true
                         }
                         return false

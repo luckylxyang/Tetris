@@ -8,7 +8,6 @@ class J() : TetrisBlock() {
         set(value) {}
 
     override fun rotateBlock(): Array<BooleanArray> {
-        println("J's rotateBlock()")
         rotations++;
         if (rotations > 3) {
             rotations = 0
@@ -60,7 +59,6 @@ class O() : TetrisBlock() {
         set(value) {}
 
     override fun rotateBlock(): Array<BooleanArray> {
-        println("O's rotateBlock()")
         return shape
     }
 }
@@ -71,7 +69,6 @@ class I() : TetrisBlock() {
         set(value) {}
 
     override fun rotateBlock(): Array<BooleanArray> {
-        println("I's rotateBlock()")
         rotations++
         if (rotations > 1) {
             rotations = 0
@@ -104,7 +101,6 @@ class L() : TetrisBlock() {
         set(value) {}
 
     override fun rotateBlock(): Array<BooleanArray> {
-        println("L's rotateBlock()")
         rotations++
         if (rotations > 2) {
             rotations = 0
@@ -142,7 +138,6 @@ class S() : TetrisBlock() {
         set(value) {}
 
     override fun rotateBlock(): Array<BooleanArray> {
-        println("S's rotateBlock()")
         rotations++;
         if (rotations > 1) {
             rotations = 0
@@ -174,7 +169,6 @@ class Z() : TetrisBlock() {
         set(value) {}
 
     override fun rotateBlock(): Array<BooleanArray> {
-        println("Z's rotateBlock()")
         rotations++;
         if (rotations > 1) {
             rotations = 0
@@ -206,7 +200,6 @@ class T : TetrisBlock() {
         set(value) {}
 
     override fun rotateBlock(): Array<BooleanArray> {
-        println("T's rotateBlock()")
         rotations++;
         if (rotations > 3) {
             rotations = 0
@@ -261,9 +254,7 @@ object TetrisBlocks {
     // 随机生成一个方块
     fun getRandomTetrisBlocks(): TetrisBlock {
         val randomIndex = Random.nextInt(allTetrisBlocks.size)
-        val tetrisBlock = allTetrisBlocks[randomIndex]
-        println("It's getRandomTetrisBlocks is ${tetrisBlock.javaClass.name}")
-        return tetrisBlock
+        return allTetrisBlocks[randomIndex]
     }
 
 }
